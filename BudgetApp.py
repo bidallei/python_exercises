@@ -1,39 +1,5 @@
-'''
-
-Besides the Category class, create a function (outside of the class) called create_spend_chart that takes a list of categories as an argument. It should return a string that is a bar chart.
-
-The chart should show the percentage spent in each category passed in to the function. The percentage spent should be calculated only with withdrawals and not with deposits. Down the left side of the chart should be labels 0 - 100. The 'bars' in the bar chart should be made out of the 'o' character. The height of each bar should be rounded down to the nearest 10. The horizontal line below the bars should go two spaces past the final bar. Each category name should be written vertically below the bar. There should be a title at the top that says 'Percentage spent by category'.
-
-This function will be tested with up to four categories.
-
-Look at the example output below very closely and make sure the spacing of the output matches the example exactly.
-
-Percentage spent by category
-100|          
- 90|          
- 80|          
- 70|          
- 60| o        
- 50| o        
- 40| o        
- 30| o        
- 20| o  o     
- 10| o  o  o  
-  0| o  o  o  
-    ----------
-     F  C  A  
-     o  l  u  s
-     o  o  t  
-     d  t  o  
-        h     
-        i     
-        n     
-        g  
-
-
-'''
-
-
+# Budget App
+# This program is a budget app that allows users to create categories, deposit and withdraw funds from those categories, transfer funds between categories, and display a bar chart of the percentage of funds spent in each category.
 
 class Category:
     
@@ -67,6 +33,9 @@ class Category:
     def check_funds(self, amount):
         return amount <= self.get_balance()
     
+    def get_withdrawals(self):
+        return sum(item['amount'] for item in self.ledger if item['amount'] < 0)
+    
     def __str__(self):
         title = self.category.center(30, '*') + '\n'
         items = ''
@@ -79,8 +48,30 @@ class Category:
         return title + items + total
 
 def create_spend_chart(categories):
-    pass
 
+    total_spent = sum(category.get_withdrawals() for category in categories)
+    percentages = [(category.get_withdrawals() / total_spent) * 100 for category in categories]
+    rounded_percentages = [int(p // 10) * 10 for p in percentages]
+    chart = "Percentage spent by category\n"
+    
+    for i in range(100, -1, -10):
+        chart += f"{str(i).rjust(3)}| "
+        for percent in rounded_percentages:
+            chart += 'o' if percent >= i else ' '
+        chart += '\n'
+
+    chart += "    " + "-" * (len(categories) * 3 + 1) + "\n"
+
+    max_length = max(len(category.category) for category in categories)
+    category_names = [category.category.ljust(max_length) for category in categories]
+   
+    for i in range(max_length):
+        chart += "     "
+        for name in category_names:
+            chart += name[i] + "  "
+        chart += "\n"
+
+    return chart.rstrip("\n")
 
 food = Category('Food')
 food.deposit(1000, 'deposit')
@@ -88,4 +79,16 @@ food.withdraw(10.15, 'groceries')
 food.withdraw(15.89, 'restaurant and more food for dessert')
 clothing = Category('Clothing')
 food.transfer(50, clothing)
+
+lothing = Category('Clothing')
+food.transfer(50, clothing)
+
+auto = Category('Auto')
+auto.deposit(1000, 'deposit')
+auto.withdraw(100, 'gasoline')
+
 print(food)
+print(clothing)
+print(auto)
+
+print(create_spend_chart([food, clothing, auto]))
